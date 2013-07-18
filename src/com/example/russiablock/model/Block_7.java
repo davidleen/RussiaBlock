@@ -8,7 +8,7 @@ public class Block_7 {
 	static int[][] location3 = new int[][] { { 0, 1 }, { 0, 0 }, { 1, 0 }, { 2, 0 } };
 	static int[][] location4 = new int[][] { { -1, 0 }, { 0, 0 }, { 1, 0 }, { 1, -1 } };
 	 
-	static int[][][] location = new int[][][] { location1, location2, location3, location4 };
+	static int[][][] location = new int[][][] { location1,location3,  location2, location4 };
 	int currentState=0;
 	
 	

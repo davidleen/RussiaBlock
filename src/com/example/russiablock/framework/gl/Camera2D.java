@@ -24,7 +24,7 @@ public class Camera2D {
     public void setViewportAndMatrices() {
         GL10 gl = glGraphics.getGL();
         gl.glViewport(0, 0, glGraphics.getWidth(), glGraphics.getHeight());
-        gl.glMatrixMode(GL10.GL_PROJECTION);
+        gl.glMatrixMode(GL10.GL_PROJECTION); 
         gl.glLoadIdentity();
         gl.glOrthof(position.x - frustumWidth * zoom / 2, 
                     position.x + frustumWidth * zoom/ 2, 
@@ -33,6 +33,8 @@ public class Camera2D {
                     1, -1);
         gl.glMatrixMode(GL10.GL_MODELVIEW);
         gl.glLoadIdentity();
+       
+        
     }
     
     public void touchToWorld(Vector2 touch) {

@@ -8,7 +8,7 @@ import com.example.russiablock.framework.impl.GLGame;
 
  
 
-public class MainActivity extends GLGame {
+public class RussiaBlock extends GLGame {
 
 	private boolean firstTimeCreate = true;
 

@@ -36,7 +36,9 @@ public class GameScreen extends AbstractScreen {
 	Rectangle leftBounds;
 	Rectangle rightBounds;
 	Rectangle speedUpBounds;
-	// Rectangle quitBounds;
+	Rectangle rotateBounds;
+	private Rectangle lastRectangle;
+	private Rectangle thisRectangle;
 	// int lastScore;
 	// String scoreString;
 	FPSCounter fpsCounter;
@@ -60,13 +62,15 @@ public class GameScreen extends AbstractScreen {
 			@Override
 			public void collide() {
 				// TODO Auto-generated method stub
-
+				Log.e(TAG, "colide");
+				Assets.playSound(Assets.collideSound);
 			}
 
 			@Override
 			public void collapse() {
 				// TODO Auto-generated method stub
-
+				Log.e(TAG, "collapsed");
+				Assets.playSound(Assets.collapsedSound);
 			}
 
 		};
@@ -75,6 +79,7 @@ public class GameScreen extends AbstractScreen {
 		leftBounds = new Rectangle(320 - 64, 32, 32, 32);
 		rightBounds = new Rectangle(320 - 64, 32 * 3, 32, 32);
 		speedUpBounds = new Rectangle(320 - 64, 32 * 5, 32, 32);
+		rotateBounds = new Rectangle(320 - 64, 32 * 7, 32, 32);
 		// quitBounds = new Rectangle(160 - 96, 240 - 36, 192, 36);
 		// lastScore = 0;
 		// scoreString = "score: 0";
@@ -88,25 +93,65 @@ public class GameScreen extends AbstractScreen {
 		int len = events.size();
 		for (int i = 0; i < len; i++) {
 			TouchEvent event = events.get(i);
-			if (event.type != TouchEvent.TOUCH_DOWN)
-				continue;
-			// Log.d(TAG, "x:" + event.x + ",y:" + event.y);
-
+			//Log.e(TAG, event.toString());
 			guiCam.touchToWorld(touchPoint.set(event.x, event.y));
-
-			// Log.d(TAG, "x:" + touchPoint.x + ",y:" + touchPoint.y);
-
+			thisRectangle = null;
 			if (OverlapTester.pointInRectangle(leftBounds, touchPoint)) {
-				// Assets.playSound(Assets.clickSound);
-				// state = GAME_PAUSED;
-				world.left();
-
-				// world.speedDown();
-				// world.rotate();
+				thisRectangle = leftBounds;
 			}
 			if (OverlapTester.pointInRectangle(rightBounds, touchPoint)) {
-				world.right();
+
+				thisRectangle = rightBounds;
 			}
+
+			if (OverlapTester.pointInRectangle(speedUpBounds, touchPoint)) {
+
+				thisRectangle = speedUpBounds;
+			}
+
+			if (OverlapTester.pointInRectangle(rotateBounds, touchPoint)) {
+
+				thisRectangle = rotateBounds;
+			}
+
+			switch (event.type) {
+			case TouchEvent.TOUCH_DOWN: {
+
+				if (thisRectangle == leftBounds) {
+					world.left();
+
+				}
+				if (thisRectangle == rightBounds) {
+					world.right();
+
+				}
+
+				if (thisRectangle == speedUpBounds) {
+					world.speedDown();
+
+				}
+
+				if (thisRectangle == rotateBounds) {
+					world.rotate();
+
+				}
+
+				break;
+			}
+
+			case TouchEvent.TOUCH_UP: {
+
+				if (thisRectangle == speedUpBounds
+						&& lastRectangle == thisRectangle) {
+					world.speedNormal();
+				}
+				thisRectangle = null;
+
+				break;
+			}
+			}
+
+			lastRectangle = thisRectangle;
 
 		}
 		world.update(deltaTime);
@@ -119,8 +164,10 @@ public class GameScreen extends AbstractScreen {
 		GL10 gl = graphics.getGL();
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
 		gl.glEnable(GL10.GL_TEXTURE_2D);
-
-		renderer.render();
+		gl.glEnable(GL10.GL_BLEND);
+		
+		 gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
+		renderer.render(world, deltaTime);
 
 		guiCam.setViewportAndMatrices();
 		batcher.beginBatch(Assets.items);
@@ -136,8 +183,12 @@ public class GameScreen extends AbstractScreen {
 				speedUpBounds.width, -speedUpBounds.height,
 				Assets.speedUpRegion);
 
-		batcher.endBatch();
+		batcher.drawSprite(rotateBounds.lowerLeft.x + rotateBounds.width / 2,
+				rotateBounds.lowerLeft.y + rotateBounds.height / 2,
+				rotateBounds.width, rotateBounds.height, Assets.rotateRegion);
 
+		batcher.endBatch();
+	
 		gl.glDisable(GL10.GL_TEXTURE_2D);
 		gl.glDisable(GL10.GL_BLEND);
 	}

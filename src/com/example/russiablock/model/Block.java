@@ -1,5 +1,6 @@
 package com.example.russiablock.model;
 
+import java.util.List;
 import java.util.Random;
 
 import com.example.russiablock.Assets;
@@ -26,46 +27,64 @@ public class Block {
 	int currentTime = 0;
 	public int color;
 
-	int[][][] areas;
-	int totalRotateCount = 0;
-	
+	private int[][][] areas;
 
 	public Block() {
 		for (int i = 0; i < BLOCKNUM; i++) {
 			area[i] = new Position(0, 0);
 			tempArea[i] = new Position(0, 0);
 		}
+		position = new Position(0, 0);
+		init();
 	}
 
-	public void reset(int worldWidth,int worldHeight) {
-		position = new Position(worldWidth / 2, worldHeight-1);
+	public void setPosition(int x, int y) {
+		position.x = x;
+		position.y = y; 
+		setArea();
+
+	}
+
+	public void setAreas(int[][][] areas) {
+		this.areas = areas;
+		currentTime = 0;
+		setArea();
+	}
+
+	public int[][][] getAreas() {
+		return areas;
+
+	}
+
+	public void init() {
+
 		color = d.nextInt(Assets.BLOCKNUM);
 		switch (d.nextInt(7)) {
 
 		case 0:
 			areas = Block_I.location;
 			break;
-			
+
 		case 1:
 			areas = Block_Z.location;
 			break;
-			
+
 		case 2:
 			areas = Block_7.location;
 			break;
-			
+
 		case 3:
 			areas = Block_S.location;
 			break;
-			
+
 		case 4:
 			areas = Block_L.location;
 			break;
-			
+
 		case 5:
 			areas = Block_O.location;
 			break;
-			
+
 		case 6:
 			areas = Block_T.location;
 			break;
@@ -74,8 +93,6 @@ public class Block {
 			areas = Block_I.location;
 
 		}
-		currentTime = 0;
-		totalRotateCount = areas.length;
 		setArea();
 
 	}
@@ -83,74 +100,65 @@ public class Block {
 	/**
 	 * ������ǰ��һ��
 	 */
-	public void advance(int[][] worldLimit, int  worldWidth, int worldHeight) {
+	public void advance() {
 
-		setTempArea();
-		if(position.y ==0)
-		{
-			 
-			return ;
+		if (position.y == 0) {
+			return;
 		}
- 
-		
+
 		for (int i = 0; i < BLOCKNUM; i++) {
-			tempArea[i].y -= 1;
-			 
+			area[i].y -= 1;
+
 		}
 		position.y -= 1;
-		copyArea();
 
 	}
 
-	public void rotate(int[][] worldLimit, int worldWidth, int worldHeight) {
+	public void rotate(WallItem[][] cells, int worldWidth, int worldHeight) {
 
-		int time = (currentTime + 1) % totalRotateCount;
+		int time = (currentTime + 1) % areas.length;
 		for (int i = 0; i < BLOCKNUM; i++) {
 			tempArea[i].y = position.y + areas[time][i][1];
 			tempArea[i].x = position.x + areas[time][i][0];
 		}
-//		int offsetX = 0;
-//		for (int i = 0; i < BLOCKNUM; i++) {
-//			if (tempArea[i].y >= worldHeight
-//					|| worldLimit[tempArea[i].x][tempArea[i].y] > 0)//
-//			{// can not rotate
-//				return;
-//			}
-//			if (tempArea[i].x < 0)
-//				offsetX = Math.min(offsetX, -tempArea[i].x);
-//			if (tempArea[i].x >= worldWidth)
-//				offsetX = Math.min(offsetX, worldWidth - tempArea[i].x);
-//		}
-//		// outof left right border
-//		if (offsetX != 0) {
-//			for (int i = 0; i < BLOCKNUM; i++) {
-//				tempArea[i].x += offsetX;
-//
-//				if (worldLimit[tempArea[i].x][tempArea[i].y] > 0)//
-//				{// check whether relocate ok��
-//					return;
-//				}
-//			}
-//		}
+		int offsetX = 0;
+		for (int i = 0; i < BLOCKNUM; i++) {
+
+			if (tempArea[i].x < 0)
+				offsetX = Math.max(offsetX, -tempArea[i].x);
+			if (tempArea[i].x >= worldWidth)
+				offsetX = Math.min(offsetX, worldWidth - tempArea[i].x - 1);
+
+		}
+		// outof left right border
+		if (offsetX != 0) {
+			for (int i = 0; i < BLOCKNUM; i++) {
+				tempArea[i].x += offsetX;
+
+				if (cells[tempArea[i].x][tempArea[i].y] != null)
+					return;
+
+			}
+		}
 		currentTime = time;
 		copyArea();
 		position.x = area[1].x;
 
 	}
 
-	public void left( ) {
+	public void left() {
 
-		  position.x -= 1;
-		  for (int i = 0; i < BLOCKNUM; i++) {
-		  area[i].x -= 1;
-		  }
+		position.x -= 1;
+		for (int i = 0; i < BLOCKNUM; i++) {
+			area[i].x -= 1;
+		}
 	}
 
-	public void right( ) {
-		  position.x += 1;
-		  for (int i = 0; i < BLOCKNUM; i++) {
-		  area[i].x += 1;
-		  }
+	public void right() {
+		position.x += 1;
+		for (int i = 0; i < BLOCKNUM; i++) {
+			area[i].x += 1;
+		}
 
 	}
 
@@ -158,13 +166,6 @@ public class Block {
 		for (int i = 0; i < BLOCKNUM; i++) {
 			area[i].y = position.y + areas[currentTime][i][1];
 			area[i].x = position.x + areas[currentTime][i][0];
-		}
-	}
-
-	private void setTempArea() {
-		for (int i = 0; i < BLOCKNUM; i++) {
-			tempArea[i].y = area[i].y;
-			tempArea[i].x = area[i].x;
 		}
 	}
 
