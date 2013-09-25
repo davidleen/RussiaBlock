@@ -78,7 +78,7 @@ public class Block {
 			break;
 
 		case 4:
-			areas = Block_L.location;
+			areas = Block_J.location;
 			break;
 
 		case 5:
